@@ -127,4 +127,21 @@ public class SaleController {
                     .body(Map.of("success", false, "error", "매출 삭제에 실패했습니다: " + e.getMessage()));
         }
     }
+
+    @PutMapping("/{saleId}/user/{userId}")
+    public ResponseEntity<?> updateSale(@PathVariable Long saleId, @PathVariable String userId, @Valid @RequestBody SaleRequest request) {
+        try {
+            log.info("매출 수정 요청: saleId={}, userId={}, request={}", saleId, userId, request);
+            SaleResponse response = saleService.updateSale(saleId, userId, request);
+            return ResponseEntity.ok(Map.of("success", true, "data", response));
+        } catch (IllegalArgumentException e) {
+            log.warn("매출 수정 권한 없음", e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("매출 수정 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", "매출 수정에 실패했습니다: " + e.getMessage()));
+        }
+    }
 } 

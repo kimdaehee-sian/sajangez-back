@@ -127,6 +127,30 @@ public class SaleService {
             throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
     }
+
+    @Transactional
+    public SaleResponse updateSale(Long saleId, String userId, SaleRequest request) {
+        log.info("매출 데이터 수정: saleId={}, userId={}, request={}", saleId, userId, request);
+        
+        Optional<Sale> saleOptional = saleRepository.findById(saleId);
+        if (saleOptional.isPresent() && saleOptional.get().getUserId().equals(userId)) {
+            Sale sale = saleOptional.get();
+            
+            // 매출 데이터 업데이트
+            sale.setAmount(request.getAmount());
+            sale.setStoreName(request.getStoreName());
+            sale.setBusinessType(request.getBusinessType());
+            sale.setSaleDate(request.getSaleDate());
+            
+            Sale savedSale = saleRepository.save(sale);
+            log.info("매출 데이터 수정 완료: saleId={}", saleId);
+            
+            return convertToResponse(savedSale);
+        } else {
+            log.warn("매출 데이터 수정 실패 - 권한 없음: saleId={}, userId={}", saleId, userId);
+            throw new IllegalArgumentException("수정 권한이 없습니다.");
+        }
+    }
     
     private SaleResponse convertToResponse(Sale sale) {
         return SaleResponse.builder()
